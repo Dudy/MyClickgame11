@@ -65,7 +65,7 @@ function renderWork() {
 
         // Level-Up-Button
         const levelUpBtn = document.createElement('button');
-        levelUpBtn.textContent = `Level Up - Kosten: ${10 * btn.points}`;
+        levelUpBtn.textContent = `Level Up - Kosten: ${Math.ceil(10 * btn.points * (1.1 ** btn.level))}`;
         levelUpBtn.classList.add('btn', 'btn-info', 'btn-block');
         levelUpBtn.addEventListener('click', () => handleLevelUp(index));
 
@@ -119,14 +119,26 @@ function updateButtonStates() {
 setInterval(updateButtonStates, 1000);
 
 // Level-Up-Logik
+//function handleLevelUp(index) {
+//    const btn = buttons[index];
+//    const cost = 10 * btn.points;
+//    if (points >= cost) {
+//        points -= cost;
+//        btn.level += 1;
+//        pointsDisplay.textContent = `Punkte: ${points}`;
+//        renderWork(); // UI neu rendern
+//    }
+//}
+
 function handleLevelUp(index) {
     const btn = buttons[index];
-    const cost = 10 * btn.points;
+    const baseCost = 10 * btn.points; // Basis-Kosten
+    const cost = Math.ceil(baseCost * (1.1 ** btn.level)); // Kosten für das nächste Level
     if (points >= cost) {
         points -= cost;
         btn.level += 1;
         pointsDisplay.textContent = `Punkte: ${points}`;
-        renderWork(); // UI neu rendern
+        renderWork(); // UI aktualisieren
     }
 }
 
