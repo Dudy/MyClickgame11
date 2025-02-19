@@ -1,0 +1,58 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+header {
+    background-color: #f0f0f0;
+    padding: 10px;
+    text-align: center;
+}
+
+aside {
+    width: 200px;
+    background-color: #e0e0e0;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+aside button {
+    margin: 5px 0;
+    padding: 10px;
+    font-size: 16px;
+}
+
+aside button.active {
+    background-color: #aaa;
+    color: white;
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+#content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#content button {
+    width: calc(50% - 10px); /* Zwei Spalten mit Abstand */
+    padding: 15px;
+    font-size: 14px;
+}
+
+#content .time-display {
+    width: calc(50% - 10px);
+    text-align: center;
+    font-size: 12px;
+    color: #555;
+}
