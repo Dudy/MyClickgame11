@@ -88,3 +88,20 @@ body {
 .manager-item {
   margin-bottom: 10px;
 }
+
+
+
+
+
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Countdown-Text unter den Buttons */
+.countdown {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
+}

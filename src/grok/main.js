@@ -33,15 +33,15 @@ function renderWork() {
     buttons.forEach((btn, index) => {
         const button = document.createElement('button');
         button.textContent = btn.caption;
+        button.classList.add('btn', 'btn-secondary', 'm-2'); // Bootstrap-Button mit Abstand
         const timeDisplay = document.createElement('span');
         timeDisplay.textContent = 'Bereit';
-        timeDisplay.classList.add('time-display');
+        timeDisplay.classList.add('badge', 'badge-info', 'm-2'); // Bootstrap-Badge
 
         button.addEventListener('click', () => handleButtonClick(index, button, timeDisplay));
         content.appendChild(button);
         content.appendChild(timeDisplay);
 
-        // Falls ein Manager existiert, automatische Klicks starten
         if (managers.includes(index)) {
             automateButton(index, button, timeDisplay);
         }
@@ -87,12 +87,13 @@ function renderUpdate() {
     availableUpdates.forEach((update, index) => {
         const updateBtn = document.createElement('button');
         updateBtn.textContent = `${update.name} - Kosten: ${update.cost}`;
+        updateBtn.classList.add('btn', 'btn-success', 'm-2'); // Grüner Button
         updateBtn.addEventListener('click', () => {
             if (points >= update.cost) {
                 points -= update.cost;
                 pointsDisplay.textContent = `Punkte: ${points}`;
                 applyUpdate(update);
-                availableUpdates.splice(index, 1); // Entfernt das Update nach Kauf
+                availableUpdates.splice(index, 1);
                 renderUpdate();
             }
         });
@@ -113,17 +114,18 @@ function applyUpdate(update) {
 function renderManager() {
     content.innerHTML = '';
     buttons.forEach((btn, index) => {
-        if (!managers.includes(index)) { // Nur anzeigen, wenn noch kein Manager existiert
+        if (!managers.includes(index)) {
             const managerBtn = document.createElement('button');
             managerBtn.textContent = `Manager für ${btn.caption} - Kosten: ${btn.delay * 10}`;
+            managerBtn.classList.add('btn', 'btn-warning', 'm-2'); // Gelber Button
             managerBtn.addEventListener('click', () => {
-                const cost = btn.delay * 10; // Beispiel: Kosten basierend auf Verzögerung
+                const cost = btn.delay * 10;
                 if (points >= cost) {
                     points -= cost;
                     pointsDisplay.textContent = `Punkte: ${points}`;
                     managers.push(index);
-                    renderManager(); // Aktualisiert die Manager-Seite
-                    renderWork(); // Aktualisiert die Work-Seite für Automatisierung
+                    renderManager();
+                    renderWork();
                 }
             });
             content.appendChild(managerBtn);

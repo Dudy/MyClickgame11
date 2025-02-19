@@ -3,25 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>Clicker Game</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-<div id="container">
-    <header id="header">
-        <h1>Clicker Game</h1>
-        <div id="status">Points: 0</div>
-    </header>
-    <div id="main">
-        <aside id="sidebar">
-            <button id="btnWork" class="nav-button">Work</button>
-            <button id="btnUpdate" class="nav-button">Update</button>
-            <button id="btnManager" class="nav-button">Manager</button>
+<!-- Header: Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">Clicker Game</a>
+        <span class="navbar-text" id="status">Points: 0</span>
+    </div>
+</nav>
+
+<!-- Hauptinhalt -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <aside class="col-md-2 bg-light p-3" id="sidebar">
+            <button id="btnWork" class="btn btn-primary w-100 mb-3">Work</button>
+            <button id="btnUpdate" class="btn btn-primary w-100 mb-3">Update</button>
+            <button id="btnManager" class="btn btn-primary w-100">Manager</button>
         </aside>
-        <section id="content">
+        <!-- Contentbereich -->
+        <main class="col-md-10 p-3" id="content">
             <!-- Dynamischer Content wird hier geladen -->
-        </section>
+        </main>
     </div>
 </div>
+
+<!-- Scripts -->
 <script src="main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

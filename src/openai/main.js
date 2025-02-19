@@ -65,39 +65,48 @@ document.addEventListener("DOMContentLoaded", function () {
   // ---------------------------
   function showWork() {
     const content = document.getElementById("content");
-    content.innerHTML = ""; // Vorherigen Content löschen
+    content.innerHTML = "";
 
+    // Erstelle ein Bootstrap-Grid: 2 Spalten, mit Abstand (g-3)
     const grid = document.createElement("div");
-    grid.className = "work-grid";
+    grid.className = "row row-cols-2 g-3";
 
     workButtonsConfig.forEach(btnConfig => {
-      const btnContainer = document.createElement("div");
-      btnContainer.className = "work-button-container";
+      // Bootstrap-Spalte
+      const col = document.createElement("div");
+      col.className = "col";
+
+      // Erstelle eine Card für den Button
+      const card = document.createElement("div");
+      card.className = "card text-center";
+
+      const cardBody = document.createElement("div");
+      cardBody.className = "card-body";
 
       // Der eigentliche Button
       const button = document.createElement("button");
       button.textContent = btnConfig.caption;
       button.id = "work-btn-" + btnConfig.id;
+      button.className = "btn btn-primary w-100";
       button.disabled = false;
 
       // Countdown-Anzeige
       const countdownText = document.createElement("div");
       countdownText.className = "countdown";
-      countdownText.textContent = "";
 
-      btnContainer.appendChild(button);
-      btnContainer.appendChild(countdownText);
-      grid.appendChild(btnContainer);
+      // Elemente zusammenfügen
+      cardBody.appendChild(button);
+      cardBody.appendChild(countdownText);
+      card.appendChild(cardBody);
+      col.appendChild(card);
+      grid.appendChild(col);
 
       // Klick-Event: Punkte vergeben, Button deaktivieren und Cooldown starten
       button.addEventListener("click", function () {
-        // Button wird sofort deaktiviert
         button.disabled = true;
-        // Berechne die zu vergebenden Punkte (ggf. mit Bonusmultiplikator)
         const earnedPoints = btnConfig.basePoints * btnConfig.bonusMultiplier;
         addPoints(earnedPoints);
 
-        // Starte den Cooldown-Timer
         let remaining = btnConfig.delay;
         countdownText.textContent = remaining + " Sekunden";
         const interval = setInterval(() => {
@@ -108,8 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
             clearInterval(interval);
             countdownText.textContent = "";
             button.disabled = false;
-            // Falls ein Manager für diesen Button eingestellt wurde,
-            // wird der Button automatisch gedrückt.
+            // Falls ein Manager eingestellt wurde, wird der Button automatisch gedrückt
             if (btnConfig.managerHired) {
               button.click();
             }
@@ -128,16 +136,18 @@ document.addEventListener("DOMContentLoaded", function () {
     const content = document.getElementById("content");
     content.innerHTML = "";
 
+    // Verwende eine Bootstrap List Group
     const list = document.createElement("ul");
-    list.className = "update-list";
+    list.className = "list-group";
 
     updatesConfig.forEach(update => {
       const li = document.createElement("li");
-      li.className = "update-item";
-      li.textContent = update.name + " (Kosten: " + update.cost + " Punkte) ";
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.textContent = update.name + " (Kosten: " + update.cost + " Punkte)";
 
       const btn = document.createElement("button");
       btn.textContent = "Kaufen";
+      btn.className = "btn btn-success btn-sm";
       btn.addEventListener("click", function () {
         if (gameState.points >= update.cost) {
           gameState.points -= update.cost;
@@ -148,7 +158,6 @@ document.addEventListener("DOMContentLoaded", function () {
           alert("Nicht genügend Punkte!");
         }
       });
-
       li.appendChild(btn);
       list.appendChild(li);
     });
@@ -163,18 +172,21 @@ document.addEventListener("DOMContentLoaded", function () {
     const content = document.getElementById("content");
     content.innerHTML = "";
 
-    // Für jeden Work-Button gibt es einen möglichen Manager
+    // Verwende eine Bootstrap List Group für Manager
+    const list = document.createElement("ul");
+    list.className = "list-group";
+
     workButtonsConfig.forEach(btnConfig => {
-      const managerDiv = document.createElement("div");
-      managerDiv.className = "manager-item";
-      managerDiv.textContent = "Manager für " + btnConfig.caption + " (Kosten: 150 Punkte) ";
+      const li = document.createElement("li");
+      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.textContent = "Manager für " + btnConfig.caption + " (Kosten: 150 Punkte)";
 
       const btn = document.createElement("button");
       btn.textContent = btnConfig.managerHired ? "Eingestellt" : "Manager einstellen";
+      btn.className = "btn btn-secondary btn-sm";
       btn.disabled = btnConfig.managerHired;
-
       btn.addEventListener("click", function () {
-        const cost = 150; // Manager-Kosten (kann angepasst werden)
+        const cost = 150;
         if (gameState.points >= cost) {
           gameState.points -= cost;
           btnConfig.managerHired = true;
@@ -185,10 +197,11 @@ document.addEventListener("DOMContentLoaded", function () {
           alert("Nicht genügend Punkte!");
         }
       });
-
-      managerDiv.appendChild(btn);
-      content.appendChild(managerDiv);
+      li.appendChild(btn);
+      list.appendChild(li);
     });
+
+    content.appendChild(list);
   }
 
   // Zeige initial den Work-Bereich an

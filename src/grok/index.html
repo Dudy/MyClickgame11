@@ -4,22 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clicker Game</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Eigenes CSS -->
     <link rel="stylesheet" href="main.css">
 </head>
 <body>
-<div class="container">
-    <header>
-        <div id="points">Punkte: 0</div>
+<div class="container-fluid">
+    <header class="bg-light p-3 text-center">
+        <div id="points" class="font-weight-bold">Punkte: 0</div>
     </header>
-    <aside>
-        <button id="workBtn" class="active">Work</button>
-        <button id="updateBtn">Update</button>
-        <button id="managerBtn">Manager</button>
-    </aside>
-    <main id="content">
-        <!-- Der Contentbereich wird dynamisch gefüllt -->
-    </main>
+    <div class="row">
+        <aside class="col-md-2 bg-light p-3">
+            <button id="workBtn" class="btn btn-primary btn-block active">Work</button>
+            <button id="updateBtn" class="btn btn-primary btn-block">Update</button>
+            <button id="managerBtn" class="btn btn-primary btn-block">Manager</button>
+        </aside>
+        <main id="content" class="col-md-10 p-3">
+            <!-- Der Contentbereich wird dynamisch gefüllt -->
+        </main>
+    </div>
 </div>
+<!-- jQuery, Popper.js und Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- Eigenes JavaScript -->
 <script src="main.js"></script>
 </body>
 </html>
