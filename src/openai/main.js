@@ -127,12 +127,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       // Klick-Event für den Work-Button:
-      // Punkte werden als basePoints * level * bonusMultiplier vergeben
+      // Die Punkte werden erst gutgeschrieben, wenn der Countdown abgelaufen ist.
       workButton.addEventListener("click", function () {
         workButton.disabled = true;
-        const earnedPoints = btnConfig.basePoints * btnConfig.level * btnConfig.bonusMultiplier;
-        addPoints(earnedPoints);
-
         let remaining = btnConfig.delay;
         countdownText.textContent = remaining + " Sekunden";
         const interval = setInterval(() => {
@@ -142,6 +139,9 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
             clearInterval(interval);
             countdownText.textContent = "Bereit";
+            // Punkte werden jetzt gutgeschrieben
+            const earnedPoints = btnConfig.basePoints * btnConfig.level * btnConfig.bonusMultiplier;
+            addPoints(earnedPoints);
             // Button wieder aktivieren, sofern Level > 0
             if (btnConfig.level > 0) {
               workButton.disabled = false;
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
       });
 
-      // Elemente zur Card hinzufügen
+      // Alle Elemente in der Card zusammenfügen
       cardBody.appendChild(workButton);
       cardBody.appendChild(countdownText);
       cardBody.appendChild(levelInfo);
@@ -198,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
           gameState.points -= update.cost;
           update.apply();
           updateStatus();
-          btn.disabled = true; // Einmaliger Kauf – danach deaktivieren
+          btn.disabled = true;
         } else {
           alert("Nicht genügend Punkte!");
         }

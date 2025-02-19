@@ -15,4 +15,13 @@
 .column {
     flex: 1; /* Jede Spalte nimmt den verfügbaren Platz gleichmäßig ein */
     margin: 0 10px; /* Abstand zwischen den Spalten */
+    min-width: 0; /* Verhindert Überlaufen */
+}
+
+.column.left {
+    margin-right: 10px;
+}
+
+.column.right {
+    margin-left: 10px;
 }

@@ -1,10 +1,11 @@
+// Datenstruktur für die Buttons
 const buttons = [];
 for (let i = 0; i < 10; i++) {
-    const delay = 2 * (5 ** i);   // 2 * 5^i
-    const points = 1 * (10 ** i); // 1 * 10^i
+    const delay = 2 * (5 ** i);   // Verzögerung: 2 * 5^i
+    const points = 1 * (10 ** i); // Punkte: 1 * 10^i
     buttons.push({ caption: `Button ${i + 1}`, delay, points, level: 0 });
 }
-buttons[0].level = 1
+buttons[0].level = 1; // Start-Level für Button 1
 
 // Datenstruktur für Updates
 const availableUpdates = [
@@ -15,16 +16,29 @@ const availableUpdates = [
 // Spielzustand
 let points = 0;
 let managers = []; // Indizes der Buttons mit Managern
-const buttonStates = buttons.map(() => ({ availableAt: 0 })); // Zeitpunkt, wann der Button wieder verfügbar ist
+const buttonStates = buttons.map(() => ({ availableAt: 0, isProcessing: false })); // Zeitpunkt und Bearbeitungsstatus
 
 // DOM-Elemente
 const content = document.getElementById('content');
 const pointsDisplay = document.getElementById('points');
 const sidebarBtns = document.querySelectorAll('aside button');
 
+// Arrays zur Speicherung der UI-Elemente
+let buttonElements = [];
+let timeDisplays = [];
+
 // Funktion zum Rendern der Work-Seite
 function renderWork() {
-//    content.innerHTML = '';
+    content.innerHTML = `
+        <div class="container">
+            <div class="column left"></div>
+            <div class="column right"></div>
+        </div>
+    `;
+
+    buttonElements = []; // Zurücksetzen der gespeicherten Buttons
+    timeDisplays = [];   // Zurücksetzen der Zeitangaben
+
     buttons.forEach((btn, index) => {
         // Panel erstellen
         const panel = document.createElement('div');
@@ -38,16 +52,16 @@ function renderWork() {
         const button = document.createElement('button');
         button.textContent = `${btn.caption} (Level ${btn.level})`;
         button.classList.add('btn', 'btn-secondary', 'btn-block');
-        if (btn.level === 0) {
-            button.disabled = true;
-        } else {
-            button.addEventListener('click', () => clickButton(index));
-        }
+        // Button nur aktiv, wenn Level > 0 und nicht in Bearbeitung
+        button.disabled = (btn.level === 0 || buttonStates[index].isProcessing);
+        button.addEventListener('click', () => clickButton(index));
+        buttonElements[index] = button; // Button speichern
 
         // Zeitanzeige
         const timeDisplay = document.createElement('span');
         timeDisplay.classList.add('time-display');
         timeDisplay.textContent = 'Bereit';
+        timeDisplays[index] = timeDisplay; // Zeitangabe speichern
 
         // Level-Up-Button
         const levelUpBtn = document.createElement('button');
@@ -60,41 +74,49 @@ function renderWork() {
         cardBody.appendChild(timeDisplay);
         cardBody.appendChild(levelUpBtn);
         panel.appendChild(cardBody);
-
-//        content.appendChild(panel);
-        if (index <= 5) {
+        if (index < 5) {
             document.querySelector('.column.left').appendChild(panel);
         } else {
             document.querySelector('.column.right').appendChild(panel);
         }
-        console.log(document);
-//        console.log(document.querySelector('div.column.left'));
-
-        // Timer für Zeitaktualisierung
-        setInterval(() => updateTimeDisplay(index, timeDisplay), 1000);
     });
 }
 
-// Button-Klick-Logik
+// Button-Klick-Logik: Startet nur den Timer
 function clickButton(index) {
     const btn = buttons[index];
-    if (btn.level > 0 && Date.now() >= buttonStates[index].availableAt) {
-        points += btn.points * btn.level; // Neue Logik
+    // Nur klickbar, wenn Level > 0 und nicht in Bearbeitung
+    if (btn.level > 0 && !buttonStates[index].isProcessing) {
+        buttonStates[index].isProcessing = true;
         buttonStates[index].availableAt = Date.now() + btn.delay * 1000;
-        render();
+        buttonElements[index].disabled = true; // Button deaktivieren
     }
 }
 
-// Zeitaktualisierung für die UI
-function updateTimeDisplay(index, timeDisplay) {
-    const state = buttonStates[index];
-    if (Date.now() < state.availableAt) {
-        const remaining = Math.ceil((state.availableAt - Date.now()) / 1000);
-        timeDisplay.textContent = `${remaining} Sekunden`;
-    } else {
-        timeDisplay.textContent = 'Bereit';
-    }
+// Globale Aktualisierung: Prüft Timer und schreibt Punkte gut
+function updateButtonStates() {
+    buttons.forEach((btn, index) => {
+        if (buttonStates[index].isProcessing) {
+            if (Date.now() >= buttonStates[index].availableAt) {
+                // Zeit abgelaufen: Punkte gutschreiben
+                points += btn.points * btn.level;
+                pointsDisplay.textContent = `Punkte: ${points}`;
+                buttonStates[index].isProcessing = false;
+                buttonElements[index].disabled = false; // Button aktivieren
+                timeDisplays[index].textContent = 'Bereit';
+            } else {
+                // Restzeit anzeigen
+                const remaining = Math.ceil((buttonStates[index].availableAt - Date.now()) / 1000);
+                timeDisplays[index].textContent = `${remaining} Sekunden`;
+            }
+        } else {
+            timeDisplays[index].textContent = 'Bereit';
+        }
+    });
 }
+
+// Globaler Timer für die Aktualisierung
+setInterval(updateButtonStates, 1000);
 
 // Level-Up-Logik
 function handleLevelUp(index) {
@@ -104,7 +126,7 @@ function handleLevelUp(index) {
         points -= cost;
         btn.level += 1;
         pointsDisplay.textContent = `Punkte: ${points}`;
-        renderWork(); // UI aktualisieren
+        renderWork(); // UI neu rendern
     }
 }
 
@@ -160,12 +182,12 @@ function renderManager() {
     });
 }
 
-// Manager-Logik
+// Manager-Logik: Startet Timer, keine direkte Punktgutschrift
 function runManagers() {
     setInterval(() => {
         managers.forEach(index => {
-            if (buttons[index].level > 0 && Date.now() >= buttonStates[index].availableAt) {
-                clickButton(index);
+            if (buttons[index].level > 0 && !buttonStates[index].isProcessing) {
+                clickButton(index); // Timer starten
             }
         });
     }, 1000);
