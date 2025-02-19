@@ -1,27 +1,10 @@
-// Datenstruktur für die Work-Buttons
-const buttons = [
-    { caption: "Button 1", delay: 2, points: 5, level: 1 },
-    { caption: "Button 2", delay: 4, points: 10, level: 0 },
-    { caption: "Button 3", delay: 6, points: 15, level: 0 },
-    { caption: "Button 4", delay: 8, points: 20, level: 0 },
-    { caption: "Button 5", delay: 10, points: 25, level: 0 },
-    { caption: "Button 6", delay: 12, points: 30, level: 0 },
-    { caption: "Button 7", delay: 14, points: 35, level: 0 },
-    { caption: "Button 8", delay: 16, points: 40, level: 0 },
-    { caption: "Button 9", delay: 18, points: 45, level: 0 },
-    { caption: "Button 10", delay: 20, points: 50, level: 0 }
-];
-
-const buttonStates = buttons.map(() => ({ availableAt: 0 }));
-
-function clickButton(index) {
-    const btn = buttons[index];
-    if (btn.level > 0 && Date.now() >= buttonStates[index].availableAt) {
-        points += btn.points;
-        pointsDisplay.textContent = `Punkte: ${points}`;
-        buttonStates[index].availableAt = Date.now() + btn.delay * 1000;
-    }
+const buttons = [];
+for (let i = 0; i < 10; i++) {
+    const delay = 2 * (5 ** i);   // 2 * 5^i
+    const points = 1 * (10 ** i); // 1 * 10^i
+    buttons.push({ caption: `Button ${i + 1}`, delay, points, level: 0 });
 }
+buttons[0].level = 1
 
 // Datenstruktur für Updates
 const availableUpdates = [
@@ -31,7 +14,8 @@ const availableUpdates = [
 
 // Spielzustand
 let points = 0;
-let managers = []; // Indizes der Buttons, für die ein Manager aktiv ist
+let managers = []; // Indizes der Buttons mit Managern
+const buttonStates = buttons.map(() => ({ availableAt: 0 })); // Zeitpunkt, wann der Button wieder verfügbar ist
 
 // DOM-Elemente
 const content = document.getElementById('content');
@@ -40,36 +24,68 @@ const sidebarBtns = document.querySelectorAll('aside button');
 
 // Funktion zum Rendern der Work-Seite
 function renderWork() {
-    content.innerHTML = '';
+//    content.innerHTML = '';
     buttons.forEach((btn, index) => {
+        // Panel erstellen
+        const panel = document.createElement('div');
+        panel.classList.add('card', 'm-2');
+        panel.style.width = '500px';
+
+        const cardBody = document.createElement('div');
+        cardBody.classList.add('card-body');
+
+        // Hauptbutton
         const button = document.createElement('button');
         button.textContent = `${btn.caption} (Level ${btn.level})`;
-        button.classList.add('btn', 'btn-secondary', 'm-2');
+        button.classList.add('btn', 'btn-secondary', 'btn-block');
         if (btn.level === 0) {
             button.disabled = true;
         } else {
-            button.addEventListener('click', () => {
-                clickButton(index);
-            });
+            button.addEventListener('click', () => clickButton(index));
         }
 
+        // Zeitanzeige
         const timeDisplay = document.createElement('span');
-        timeDisplay.classList.add('badge', 'badge-info', 'm-2');
+        timeDisplay.classList.add('time-display');
+        timeDisplay.textContent = 'Bereit';
 
+        // Level-Up-Button
         const levelUpBtn = document.createElement('button');
         levelUpBtn.textContent = `Level Up - Kosten: ${10 * btn.points}`;
-        levelUpBtn.classList.add('btn', 'btn-info', 'm-2');
+        levelUpBtn.classList.add('btn', 'btn-info', 'btn-block');
         levelUpBtn.addEventListener('click', () => handleLevelUp(index));
 
-        content.appendChild(button);
-        content.appendChild(timeDisplay);
-        content.appendChild(levelUpBtn);
+        // Elemente zum Panel hinzufügen
+        cardBody.appendChild(button);
+        cardBody.appendChild(timeDisplay);
+        cardBody.appendChild(levelUpBtn);
+        panel.appendChild(cardBody);
 
-        // Timer zur Aktualisierung der Zeitangabe
+//        content.appendChild(panel);
+        if (index <= 5) {
+            document.querySelector('.column.left').appendChild(panel);
+        } else {
+            document.querySelector('.column.right').appendChild(panel);
+        }
+        console.log(document);
+//        console.log(document.querySelector('div.column.left'));
+
+        // Timer für Zeitaktualisierung
         setInterval(() => updateTimeDisplay(index, timeDisplay), 1000);
     });
 }
 
+// Button-Klick-Logik
+function clickButton(index) {
+    const btn = buttons[index];
+    if (btn.level > 0 && Date.now() >= buttonStates[index].availableAt) {
+        points += btn.points * btn.level; // Neue Logik
+        buttonStates[index].availableAt = Date.now() + btn.delay * 1000;
+        render();
+    }
+}
+
+// Zeitaktualisierung für die UI
 function updateTimeDisplay(index, timeDisplay) {
     const state = buttonStates[index];
     if (Date.now() < state.availableAt) {
@@ -80,37 +96,16 @@ function updateTimeDisplay(index, timeDisplay) {
     }
 }
 
-// Logik für einen Button-Klick
-function handleButtonClick(index, button, timeDisplay) {
-    if (!button.disabled) {
-        const btn = buttons[index];
-        points += btn.points;
+// Level-Up-Logik
+function handleLevelUp(index) {
+    const btn = buttons[index];
+    const cost = 10 * btn.points;
+    if (points >= cost) {
+        points -= cost;
+        btn.level += 1;
         pointsDisplay.textContent = `Punkte: ${points}`;
-        button.disabled = true;
-
-        let remainingTime = btn.delay;
-        timeDisplay.textContent = `${remainingTime} Sekunden`;
-
-        const interval = setInterval(() => {
-            remainingTime--;
-            if (remainingTime > 0) {
-                timeDisplay.textContent = `${remainingTime} Sekunden`;
-            } else {
-                clearInterval(interval);
-                button.disabled = false;
-                timeDisplay.textContent = 'Bereit';
-            }
-        }, 1000);
+        renderWork(); // UI aktualisieren
     }
-}
-
-// Automatisierung durch Manager
-function automateButton(index, button, timeDisplay) {
-    setInterval(() => {
-        if (!button.disabled) {
-            handleButtonClick(index, button, timeDisplay);
-        }
-    }, 1000); // Prüft jede Sekunde, ob der Button verfügbar ist
 }
 
 // Funktion zum Rendern der Update-Seite
@@ -119,7 +114,7 @@ function renderUpdate() {
     availableUpdates.forEach((update, index) => {
         const updateBtn = document.createElement('button');
         updateBtn.textContent = `${update.name} - Kosten: ${update.cost}`;
-        updateBtn.classList.add('btn', 'btn-success', 'm-2'); // Grüner Button
+        updateBtn.classList.add('btn', 'btn-success', 'm-2');
         updateBtn.addEventListener('click', () => {
             if (points >= update.cost) {
                 points -= update.cost;
@@ -149,7 +144,7 @@ function renderManager() {
         if (!managers.includes(index)) {
             const managerBtn = document.createElement('button');
             managerBtn.textContent = `Manager für ${btn.caption} - Kosten: ${btn.delay * 10}`;
-            managerBtn.classList.add('btn', 'btn-warning', 'm-2'); // Gelber Button
+            managerBtn.classList.add('btn', 'btn-warning', 'm-2');
             managerBtn.addEventListener('click', () => {
                 const cost = btn.delay * 10;
                 if (points >= cost) {
@@ -165,15 +160,15 @@ function renderManager() {
     });
 }
 
-function handleLevelUp(index) {
-    const btn = buttons[index];
-    const cost = 10 * btn.points; // Kosten = 10 × Punkte des Buttons
-    if (points >= cost) {
-        points -= cost; // Punkte abziehen
-        btn.level += 1; // Level erhöhen
-        pointsDisplay.textContent = `Punkte: ${points}`; // Punkte-Anzeige aktualisieren
-        renderWork(); // UI neu rendern
-    }
+// Manager-Logik
+function runManagers() {
+    setInterval(() => {
+        managers.forEach(index => {
+            if (buttons[index].level > 0 && Date.now() >= buttonStates[index].availableAt) {
+                clickButton(index);
+            }
+        });
+    }, 1000);
 }
 
 // Event Listener für Seitenleisten-Buttons
@@ -187,18 +182,6 @@ sidebarBtns.forEach(btn => {
     });
 });
 
-function runManagers() {
-    setInterval(() => {
-        managers.forEach(index => {
-            if (buttons[index].level > 0 && Date.now() >= buttonStates[index].availableAt) {
-                clickButton(index);
-            }
-        });
-    }, 1000);
-}
-
-// Einmalig starten, z. B. am Ende des Skripts
-runManagers();
-
-// Initiales Rendern der Work-Seite
+// Initiales Rendern und Manager starten
 renderWork();
+runManagers();

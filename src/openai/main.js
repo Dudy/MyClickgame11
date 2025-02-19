@@ -4,18 +4,20 @@ document.addEventListener("DOMContentLoaded", function () {
     points: 0
   };
 
-  // Konfiguration der 10 Work-Buttons
+  // Exponentielle Konfiguration der 10 Work-Buttons:
+  // Button 1: delay: 2 sec, basePoints: 1, level: 1
+  // Jeder weitere Button: delay = vorheriger Delay * 5, basePoints = vorheriger basePoints * 10, level: 0
   const workButtonsConfig = [
-    { id: 1, caption: "Task 1", delay: 2, basePoints: 20, bonusMultiplier: 1, managerHired: false, level: 1 },
-    { id: 2, caption: "Task 2", delay: 12, basePoints: 12, bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 3, caption: "Task 3", delay: 15, basePoints: 15, bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 4, caption: "Task 4", delay: 8,  basePoints: 8,  bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 5, caption: "Task 5", delay: 20, basePoints: 20, bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 6, caption: "Task 6", delay: 5,  basePoints: 5,  bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 7, caption: "Task 7", delay: 18, basePoints: 18, bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 8, caption: "Task 8", delay: 7,  basePoints: 7,  bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 9, caption: "Task 9", delay: 14, basePoints: 14, bonusMultiplier: 1, managerHired: false, level: 0 },
-    { id: 10, caption: "Task 10", delay: 9, basePoints: 9, bonusMultiplier: 1, managerHired: false, level: 0 }
+    { id: 1, caption: "Task 1", delay: 2,       basePoints: 1,         bonusMultiplier: 1, managerHired: false, level: 1 },
+    { id: 2, caption: "Task 2", delay: 2 * 5,   basePoints: 1 * 10,      bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 3, caption: "Task 3", delay: 2 * 5**2, basePoints: 1 * 10**2,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 4, caption: "Task 4", delay: 2 * 5**3, basePoints: 1 * 10**3,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 5, caption: "Task 5", delay: 2 * 5**4, basePoints: 1 * 10**4,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 6, caption: "Task 6", delay: 2 * 5**5, basePoints: 1 * 10**5,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 7, caption: "Task 7", delay: 2 * 5**6, basePoints: 1 * 10**6,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 8, caption: "Task 8", delay: 2 * 5**7, basePoints: 1 * 10**7,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 9, caption: "Task 9", delay: 2 * 5**8, basePoints: 1 * 10**8,   bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 10, caption: "Task 10", delay: 2 * 5**9, basePoints: 1 * 10**9, bonusMultiplier: 1, managerHired: false, level: 0 }
   ];
 
   // Konfiguration der Updates
@@ -67,18 +69,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const content = document.getElementById("content");
     content.innerHTML = "";
 
-    // Erstelle ein Bootstrap-Grid: 2 Spalten, mit Abstand (g-3)
-    const grid = document.createElement("div");
-    grid.className = "row row-cols-2 g-3";
+    // Erstelle einen Row-Container mit zwei Spalten (jeweils 6 von 12 Spaltenbreiten)
+    const row = document.createElement("div");
+    row.className = "row";
 
-    workButtonsConfig.forEach(btnConfig => {
-      // Bootstrap-Spalte
-      const col = document.createElement("div");
-      col.className = "col";
+    const leftCol = document.createElement("div");
+    leftCol.className = "col-md-6";
+    const rightCol = document.createElement("div");
+    rightCol.className = "col-md-6";
 
+    // Iteriere durch die Work-Buttons: Buttons 1-5 in der linken, 6-10 in der rechten Spalte
+    workButtonsConfig.forEach((btnConfig, index) => {
       // Erstelle eine Card für den Button
       const card = document.createElement("div");
-      card.className = "card text-center";
+      card.className = "card text-center mb-3";
 
       const cardBody = document.createElement("div");
       cardBody.className = "card-body";
@@ -91,9 +95,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // Buttons mit Level 0 sind deaktiviert
       workButton.disabled = (btnConfig.level === 0);
 
-      // Countdown-Anzeige
+      // Countdown-Anzeige mit Default-Wert "Bereit"
       const countdownText = document.createElement("div");
       countdownText.className = "countdown mb-2";
+      countdownText.textContent = "Bereit";
 
       // Anzeige des aktuellen Levels
       const levelInfo = document.createElement("div");
@@ -121,10 +126,11 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      // Klick-Event für den Work-Button: Punkte vergeben, Button deaktivieren und Cooldown starten
+      // Klick-Event für den Work-Button:
+      // Punkte werden als basePoints * level * bonusMultiplier vergeben
       workButton.addEventListener("click", function () {
         workButton.disabled = true;
-        const earnedPoints = btnConfig.basePoints * btnConfig.bonusMultiplier;
+        const earnedPoints = btnConfig.basePoints * btnConfig.level * btnConfig.bonusMultiplier;
         addPoints(earnedPoints);
 
         let remaining = btnConfig.delay;
@@ -135,7 +141,7 @@ document.addEventListener("DOMContentLoaded", function () {
             countdownText.textContent = remaining + " Sekunden";
           } else {
             clearInterval(interval);
-            countdownText.textContent = "";
+            countdownText.textContent = "Bereit";
             // Button wieder aktivieren, sofern Level > 0
             if (btnConfig.level > 0) {
               workButton.disabled = false;
@@ -148,17 +154,24 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 1000);
       });
 
-      // Alle Elemente in der Card zusammenfügen
+      // Elemente zur Card hinzufügen
       cardBody.appendChild(workButton);
       cardBody.appendChild(countdownText);
       cardBody.appendChild(levelInfo);
       cardBody.appendChild(levelUpButton);
       card.appendChild(cardBody);
-      col.appendChild(card);
-      grid.appendChild(col);
+
+      // Buttons 1-5 in die linke Spalte, 6-10 in die rechte Spalte
+      if (index < 5) {
+        leftCol.appendChild(card);
+      } else {
+        rightCol.appendChild(card);
+      }
     });
 
-    content.appendChild(grid);
+    row.appendChild(leftCol);
+    row.appendChild(rightCol);
+    content.appendChild(row);
   }
 
   // ---------------------------
