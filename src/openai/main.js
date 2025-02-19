@@ -6,16 +6,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Konfiguration der 10 Work-Buttons
   const workButtonsConfig = [
-    { id: 1, caption: "Task 1", delay: 10, basePoints: 10, bonusMultiplier: 1, managerHired: false },
-    { id: 2, caption: "Task 2", delay: 12, basePoints: 12, bonusMultiplier: 1, managerHired: false },
-    { id: 3, caption: "Task 3", delay: 15, basePoints: 15, bonusMultiplier: 1, managerHired: false },
-    { id: 4, caption: "Task 4", delay: 8,  basePoints: 8,  bonusMultiplier: 1, managerHired: false },
-    { id: 5, caption: "Task 5", delay: 20, basePoints: 20, bonusMultiplier: 1, managerHired: false },
-    { id: 6, caption: "Task 6", delay: 5,  basePoints: 5,  bonusMultiplier: 1, managerHired: false },
-    { id: 7, caption: "Task 7", delay: 18, basePoints: 18, bonusMultiplier: 1, managerHired: false },
-    { id: 8, caption: "Task 8", delay: 7,  basePoints: 7,  bonusMultiplier: 1, managerHired: false },
-    { id: 9, caption: "Task 9", delay: 14, basePoints: 14, bonusMultiplier: 1, managerHired: false },
-    { id: 10, caption: "Task 10", delay: 9, basePoints: 9, bonusMultiplier: 1, managerHired: false }
+    { id: 1, caption: "Task 1", delay: 2, basePoints: 20, bonusMultiplier: 1, managerHired: false, level: 1 },
+    { id: 2, caption: "Task 2", delay: 12, basePoints: 12, bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 3, caption: "Task 3", delay: 15, basePoints: 15, bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 4, caption: "Task 4", delay: 8,  basePoints: 8,  bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 5, caption: "Task 5", delay: 20, basePoints: 20, bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 6, caption: "Task 6", delay: 5,  basePoints: 5,  bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 7, caption: "Task 7", delay: 18, basePoints: 18, bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 8, caption: "Task 8", delay: 7,  basePoints: 7,  bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 9, caption: "Task 9", delay: 14, basePoints: 14, bonusMultiplier: 1, managerHired: false, level: 0 },
+    { id: 10, caption: "Task 10", delay: 9, basePoints: 9, bonusMultiplier: 1, managerHired: false, level: 0 }
   ];
 
   // Konfiguration der Updates
@@ -83,27 +83,47 @@ document.addEventListener("DOMContentLoaded", function () {
       const cardBody = document.createElement("div");
       cardBody.className = "card-body";
 
-      // Der eigentliche Button
-      const button = document.createElement("button");
-      button.textContent = btnConfig.caption;
-      button.id = "work-btn-" + btnConfig.id;
-      button.className = "btn btn-primary w-100";
-      button.disabled = false;
+      // Der eigentliche Work-Button
+      const workButton = document.createElement("button");
+      workButton.textContent = btnConfig.caption;
+      workButton.id = "work-btn-" + btnConfig.id;
+      workButton.className = "btn btn-primary w-100 mb-2";
+      // Buttons mit Level 0 sind deaktiviert
+      workButton.disabled = (btnConfig.level === 0);
 
       // Countdown-Anzeige
       const countdownText = document.createElement("div");
-      countdownText.className = "countdown";
+      countdownText.className = "countdown mb-2";
 
-      // Elemente zusammenfügen
-      cardBody.appendChild(button);
-      cardBody.appendChild(countdownText);
-      card.appendChild(cardBody);
-      col.appendChild(card);
-      grid.appendChild(col);
+      // Anzeige des aktuellen Levels
+      const levelInfo = document.createElement("div");
+      levelInfo.className = "mb-2";
+      levelInfo.textContent = "Level: " + btnConfig.level;
 
-      // Klick-Event: Punkte vergeben, Button deaktivieren und Cooldown starten
-      button.addEventListener("click", function () {
-        button.disabled = true;
+      // Level Up Button
+      const levelUpButton = document.createElement("button");
+      const levelUpCost = 10 * btnConfig.basePoints; // Kosten zum Leveln
+      levelUpButton.textContent = "Level Up (Cost: " + levelUpCost + ")";
+      levelUpButton.className = "btn btn-secondary btn-sm";
+
+      levelUpButton.addEventListener("click", function () {
+        if (gameState.points >= levelUpCost) {
+          gameState.points -= levelUpCost;
+          btnConfig.level++;
+          levelInfo.textContent = "Level: " + btnConfig.level;
+          updateStatus();
+          // Ist der Button nun mindestens Level 1, aktivieren wir ihn
+          if (btnConfig.level > 0) {
+            workButton.disabled = false;
+          }
+        } else {
+          alert("Nicht genügend Punkte zum Leveln!");
+        }
+      });
+
+      // Klick-Event für den Work-Button: Punkte vergeben, Button deaktivieren und Cooldown starten
+      workButton.addEventListener("click", function () {
+        workButton.disabled = true;
         const earnedPoints = btnConfig.basePoints * btnConfig.bonusMultiplier;
         addPoints(earnedPoints);
 
@@ -116,14 +136,26 @@ document.addEventListener("DOMContentLoaded", function () {
           } else {
             clearInterval(interval);
             countdownText.textContent = "";
-            button.disabled = false;
+            // Button wieder aktivieren, sofern Level > 0
+            if (btnConfig.level > 0) {
+              workButton.disabled = false;
+            }
             // Falls ein Manager eingestellt wurde, wird der Button automatisch gedrückt
             if (btnConfig.managerHired) {
-              button.click();
+              workButton.click();
             }
           }
         }, 1000);
       });
+
+      // Alle Elemente in der Card zusammenfügen
+      cardBody.appendChild(workButton);
+      cardBody.appendChild(countdownText);
+      cardBody.appendChild(levelInfo);
+      cardBody.appendChild(levelUpButton);
+      card.appendChild(cardBody);
+      col.appendChild(card);
+      grid.appendChild(col);
     });
 
     content.appendChild(grid);

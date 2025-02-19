@@ -1,16 +1,27 @@
 // Datenstruktur für die Work-Buttons
 const buttons = [
-    { caption: "Button 1", delay: 2, points: 5 },
-    { caption: "Button 2", delay: 4, points: 10 },
-    { caption: "Button 3", delay: 6, points: 15 },
-    { caption: "Button 4", delay: 8, points: 20 },
-    { caption: "Button 5", delay: 10, points: 25 },
-    { caption: "Button 6", delay: 12, points: 30 },
-    { caption: "Button 7", delay: 14, points: 35 },
-    { caption: "Button 8", delay: 16, points: 40 },
-    { caption: "Button 9", delay: 18, points: 45 },
-    { caption: "Button 10", delay: 20, points: 50 }
+    { caption: "Button 1", delay: 2, points: 5, level: 1 },
+    { caption: "Button 2", delay: 4, points: 10, level: 0 },
+    { caption: "Button 3", delay: 6, points: 15, level: 0 },
+    { caption: "Button 4", delay: 8, points: 20, level: 0 },
+    { caption: "Button 5", delay: 10, points: 25, level: 0 },
+    { caption: "Button 6", delay: 12, points: 30, level: 0 },
+    { caption: "Button 7", delay: 14, points: 35, level: 0 },
+    { caption: "Button 8", delay: 16, points: 40, level: 0 },
+    { caption: "Button 9", delay: 18, points: 45, level: 0 },
+    { caption: "Button 10", delay: 20, points: 50, level: 0 }
 ];
+
+const buttonStates = buttons.map(() => ({ availableAt: 0 }));
+
+function clickButton(index) {
+    const btn = buttons[index];
+    if (btn.level > 0 && Date.now() >= buttonStates[index].availableAt) {
+        points += btn.points;
+        pointsDisplay.textContent = `Punkte: ${points}`;
+        buttonStates[index].availableAt = Date.now() + btn.delay * 1000;
+    }
+}
 
 // Datenstruktur für Updates
 const availableUpdates = [
@@ -32,20 +43,41 @@ function renderWork() {
     content.innerHTML = '';
     buttons.forEach((btn, index) => {
         const button = document.createElement('button');
-        button.textContent = btn.caption;
-        button.classList.add('btn', 'btn-secondary', 'm-2'); // Bootstrap-Button mit Abstand
-        const timeDisplay = document.createElement('span');
-        timeDisplay.textContent = 'Bereit';
-        timeDisplay.classList.add('badge', 'badge-info', 'm-2'); // Bootstrap-Badge
+        button.textContent = `${btn.caption} (Level ${btn.level})`;
+        button.classList.add('btn', 'btn-secondary', 'm-2');
+        if (btn.level === 0) {
+            button.disabled = true;
+        } else {
+            button.addEventListener('click', () => {
+                clickButton(index);
+            });
+        }
 
-        button.addEventListener('click', () => handleButtonClick(index, button, timeDisplay));
+        const timeDisplay = document.createElement('span');
+        timeDisplay.classList.add('badge', 'badge-info', 'm-2');
+
+        const levelUpBtn = document.createElement('button');
+        levelUpBtn.textContent = `Level Up - Kosten: ${10 * btn.points}`;
+        levelUpBtn.classList.add('btn', 'btn-info', 'm-2');
+        levelUpBtn.addEventListener('click', () => handleLevelUp(index));
+
         content.appendChild(button);
         content.appendChild(timeDisplay);
+        content.appendChild(levelUpBtn);
 
-        if (managers.includes(index)) {
-            automateButton(index, button, timeDisplay);
-        }
+        // Timer zur Aktualisierung der Zeitangabe
+        setInterval(() => updateTimeDisplay(index, timeDisplay), 1000);
     });
+}
+
+function updateTimeDisplay(index, timeDisplay) {
+    const state = buttonStates[index];
+    if (Date.now() < state.availableAt) {
+        const remaining = Math.ceil((state.availableAt - Date.now()) / 1000);
+        timeDisplay.textContent = `${remaining} Sekunden`;
+    } else {
+        timeDisplay.textContent = 'Bereit';
+    }
 }
 
 // Logik für einen Button-Klick
@@ -133,6 +165,17 @@ function renderManager() {
     });
 }
 
+function handleLevelUp(index) {
+    const btn = buttons[index];
+    const cost = 10 * btn.points; // Kosten = 10 × Punkte des Buttons
+    if (points >= cost) {
+        points -= cost; // Punkte abziehen
+        btn.level += 1; // Level erhöhen
+        pointsDisplay.textContent = `Punkte: ${points}`; // Punkte-Anzeige aktualisieren
+        renderWork(); // UI neu rendern
+    }
+}
+
 // Event Listener für Seitenleisten-Buttons
 sidebarBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -143,6 +186,19 @@ sidebarBtns.forEach(btn => {
         else if (btn.id === 'managerBtn') renderManager();
     });
 });
+
+function runManagers() {
+    setInterval(() => {
+        managers.forEach(index => {
+            if (buttons[index].level > 0 && Date.now() >= buttonStates[index].availableAt) {
+                clickButton(index);
+            }
+        });
+    }, 1000);
+}
+
+// Einmalig starten, z. B. am Ende des Skripts
+runManagers();
 
 // Initiales Rendern der Work-Seite
 renderWork();
